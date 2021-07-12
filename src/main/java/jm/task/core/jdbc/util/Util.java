@@ -1,5 +1,6 @@
 package jm.task.core.jdbc.util;
 
+import com.mysql.cj.jdbc.Driver;
 import jm.task.core.jdbc.model.User;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -47,8 +48,10 @@ public class Util {
     }
 
     public static Connection getConnection() throws SQLException {
+        DriverManager.registerDriver(new Driver());
         Connection connection;
         connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        connection.setAutoCommit(false);
         return connection;
     }
 }

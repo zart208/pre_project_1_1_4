@@ -1,6 +1,5 @@
 package jm.task.core.jdbc.util;
 
-import com.mysql.cj.jdbc.Driver;
 import jm.task.core.jdbc.model.User;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.MetadataSources;
@@ -18,22 +17,20 @@ public class Util {
     public final static String USER = "root";
     public final static String PASSWORD = "Lthgfhjkm_2014";
 
-    private static SessionFactory sessionFactory;
-    private static StandardServiceRegistry standardServiceRegistry;
-
-    static {
+    public static SessionFactory getSessionFactory() {
         Properties properties = new Properties();
         properties.setProperty(Environment.DIALECT, "org.hibernate.dialect.MySQLDialect");
-        properties.setProperty(Environment.DRIVER, "com.mysql.jdbc.Driver");
-        properties.setProperty(Environment.USER, "root");
-        properties.setProperty(Environment.PASS, "Lthgfhjkm_2014");
-        properties.setProperty(Environment.URL, "jdbc:mysql://localhost:3306/test");
+        properties.setProperty(Environment.DRIVER, "com.mysql.cj.jdbc.Driver");
+        properties.setProperty(Environment.USER, USER);
+        properties.setProperty(Environment.PASS, PASSWORD);
+        properties.setProperty(Environment.URL, URL);
 
-        standardServiceRegistry = new StandardServiceRegistryBuilder()
+        StandardServiceRegistry standardServiceRegistry = new StandardServiceRegistryBuilder()
                 .applySettings(properties)
                 .build();
         MetadataSources sources = new MetadataSources(standardServiceRegistry)
                 .addAnnotatedClass(User.class);
+        SessionFactory sessionFactory = null;
         try {
             sessionFactory = sources.buildMetadata().buildSessionFactory();
         } catch (Exception e) {
@@ -41,14 +38,15 @@ public class Util {
                 StandardServiceRegistryBuilder.destroy(standardServiceRegistry);
             }
         }
-    }
-
-    public static SessionFactory getSessionFactory() {
         return sessionFactory;
     }
 
     public static Connection getConnection() throws SQLException {
-        DriverManager.registerDriver(new Driver());
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            System.out.println("JDBC Driver Registration Error! " + e.getMessage());
+        }
         Connection connection;
         connection = DriverManager.getConnection(URL, USER, PASSWORD);
         connection.setAutoCommit(false);

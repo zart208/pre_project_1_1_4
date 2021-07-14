@@ -87,13 +87,12 @@ public class UserDaoHibernateImpl implements UserDao {
         Transaction transaction = null;
         try (final Session session = Util.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            User tmpUser = session.get(User.class, id);
-            if (tmpUser != null) {
-                session.delete(tmpUser);
-            } else {
+            Query sqlQuery = session.createSQLQuery("DELETE FROM users WHERE id = :param1").setParameter("param1", id);
+            int res = sqlQuery.executeUpdate();
+            transaction.commit();
+            if (res == 0) {
                 System.out.println("User wth ID = " + id + " not found!!!");
             }
-            transaction.commit();
         } catch (HibernateException e) {
             System.out.println("Error!!! " + e.getMessage());
         } catch (IllegalStateException | RollbackException exception) {
@@ -112,8 +111,7 @@ public class UserDaoHibernateImpl implements UserDao {
         List<User> users = null;
         try (final Session session = Util.getSessionFactory().openSession()) {
             transaction = session.beginTransaction();
-            Query query = session.createQuery("from User");
-            users = query.getResultList();
+            users = session.createQuery("from User").list();
             transaction.commit();
         } catch (HibernateException e) {
             System.out.println("Opening session error!!! " + e.getMessage());
